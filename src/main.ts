@@ -1,8 +1,13 @@
 'use strict';
 
+const path = require('path');
+
 const puppeteer = require('puppeteer');
 
 const libsIcon = require('./libs/iconDownloader');
+
+
+
 
 
 (async() => {
@@ -47,12 +52,18 @@ const libsIcon = require('./libs/iconDownloader');
         })
     })
 
-
-    dataIcons.map( (iconUrlCss: string) => {
+    dataIcons.map( async (iconUrlCss: string) => {
         let cleanUrl = iconUrlCss.replace('url("', "").replace('")',"");
-        libsIcon.downloadIcon(cleanUrl, "/tmp/icons")
-
-    })
+        let segmented = cleanUrl.split("/");
+        let fileName = segmented[segmented.length - 1];
+        console.log(cleanUrl)
+        console.log(fileName);
+        if ( cleanUrl && fileName ) {
+            const downloaded = await libsIcon.downloadIcon(cleanUrl, path.join(__dirname, `../collected/icons/${fileName}`))
+            console.log(downloaded);
+        }
+        
+    });
 
 
     }
