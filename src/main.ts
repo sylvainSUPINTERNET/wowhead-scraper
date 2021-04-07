@@ -70,13 +70,23 @@ const libsIcon = require('./libs/iconDownloader');
         })
      });
 
-     
+
+     const timer = (ms:any) => new Promise(res => setTimeout(res, ms))
+     async function load (liMessage: any[]) {
+        for ( let i = 0; i < liMessage.length; i++ ){
+            await page.click(`li#${liMessage[i]}`);
+            await timer(6000)
+        }
+     }
+
+     load(tabMsgIds)
+     /*
      tabMsgIds.map( async (id: any) => {
          console.log(id)
-        const el = await page.click(`li#${id}`);
-        console.log(el);
-        await page.waitForTimeout(5000);
-     })
+        await page.click(`li#${id}`);
+        await timer(6000)
+     })*/
+
     
     
 
