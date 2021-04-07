@@ -22,13 +22,73 @@ const libsIcon = require('./libs/iconDownloader');
     page.on('console', (msg: { text: () => any; }) => console.log(msg.text())); // redirect page console log to node
 
     await page.goto('https://www.linkedin.com/uas/login');
-    await page.waitForTimeout(4)
 
-    await page.$eval('#username', (el: any) => el.value = "");
+    await page.$eval('#username', (el: any) => el.value = "sylvain.joly00@orange.fr");
     await page.$eval('#password', (el: any) => el.value = "");
-    await page.click('button[type="submit"]'); // With type
+    await page.click('button[type="submit"]');
 
+    await page.waitForNavigation()
+    await page.waitForTimeout(4000)
+
+    /*
+    const radios = await page.$$eval('svg', (uses:any) => { return uses.map((u:any) => u) })
+    console.log(radios);
+    radios.map( (r:any) => console.log(r))
+
+    const t = await page.$$("use");
+
+    console.log(t);
+    t.map( (elementHandle: any) => console.log(elementHandle.outerHTML))
+      */
+    //t.map( (use:any) => console.log(use.getAttribute('href')))
+
+    //const metaAttribute = await page.$eval("[data-test-global-nav-link=messaging]", (e: { getAttribute: (arg0: string) => any; }) => e.getAttribute('class'));
+    // /console.log(metaAttribute)
+
+    await page.click("[data-test-global-nav-link=messaging]")
+    await page.waitForTimeout(4000)
+
+
+
+    await page.waitForSelector('li[id^=ember]');
+    //const messagesTab = await page.$$eval('li[id^=ember]', (liMessage:any) => liMessage)
+    //messagesTab.map( (m:any) => console.log(m.id))
+
+    const tabMsgIds = await page.evaluate(() => {
+        const liMessages = document.querySelectorAll('li[id^=ember]');
+        let collectId: any[] = [];
+        for ( let i in liMessages ) {
+            if ( liMessages[i].id ) collectId.push(liMessages[i].id);
+        }
+        return new Promise( (resolve, reject) => {
+            resolve(collectId)
+        })
+     });
+     
+     await page.click(`li[id=ember460]`);
+     await page.waitForTimeout(5000);
+
+     await page.click(`li[id=ember449]`);
+     await page.waitForTimeout(5000);
+
+     await page.click(`li[id=ember448]`);
+     await page.waitForTimeout(5000);
+     
+     tabMsgIds.map( async (id: any) => {
+         console.log(id)
+
+         if ( )
+         /*
+        const el = await page.click(`li[id=${id}]`);
+        console.log(el);
+        await page.waitForTimeout(5000);*/
+     })
+    
+    
+
+      /*
     let chatIcon = await page.evaluate( () => {
+        console.log("EVALUATE");
         const linkedinChatIconHref = "#global-nav-icon--mercado__messaging--active";
 
         // avoid shadow root
@@ -53,12 +113,12 @@ const libsIcon = require('./libs/iconDownloader');
         })
 
     });
-
     console.log(chatIcon)
+    */
     
 
-    console.log("END")
-    await browser.close();
+    //console.log("END")
+    //await browser.close();
 
 })();
 
