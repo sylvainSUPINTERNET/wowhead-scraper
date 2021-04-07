@@ -23,7 +23,7 @@ const libsIcon = require('./libs/iconDownloader');
 
     await page.goto('https://www.linkedin.com/uas/login');
 
-    await page.$eval('#username', (el: any) => el.value = "sylvain.joly00@orange.fr");
+    await page.$eval('#username', (el: any) => el.value = "");
     await page.$eval('#password', (el: any) => el.value = "");
     await page.click('button[type="submit"]');
 
@@ -50,38 +50,32 @@ const libsIcon = require('./libs/iconDownloader');
 
 
 
-    await page.waitForSelector('li[id^=ember]');
+    await page.waitForSelector('li[class^=msg-conversation-listitem]');
     //const messagesTab = await page.$$eval('li[id^=ember]', (liMessage:any) => liMessage)
     //messagesTab.map( (m:any) => console.log(m.id))
+    await page.waitForTimeout(4000)
 
     const tabMsgIds = await page.evaluate(() => {
-        const liMessages = document.querySelectorAll('li[id^=ember]');
+        //const liMessages = document.querySelectorAll('li[id^=ember]');
+        const liMessages = document.querySelectorAll("li[class^=msg-conversation-listitem]")
         let collectId: any[] = [];
+        console.log(liMessages.length)
+
         for ( let i in liMessages ) {
+            console.log(liMessages[i].id )
             if ( liMessages[i].id ) collectId.push(liMessages[i].id);
         }
         return new Promise( (resolve, reject) => {
             resolve(collectId)
         })
      });
-     
-     await page.click(`li[id=ember460]`);
-     await page.waitForTimeout(5000);
 
-     await page.click(`li[id=ember449]`);
-     await page.waitForTimeout(5000);
-
-     await page.click(`li[id=ember448]`);
-     await page.waitForTimeout(5000);
      
      tabMsgIds.map( async (id: any) => {
          console.log(id)
-
-         if ( )
-         /*
-        const el = await page.click(`li[id=${id}]`);
+        const el = await page.click(`li#${id}`);
         console.log(el);
-        await page.waitForTimeout(5000);*/
+        await page.waitForTimeout(5000);
      })
     
     
