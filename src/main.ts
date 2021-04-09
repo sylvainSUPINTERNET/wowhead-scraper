@@ -58,6 +58,21 @@ const libsIcon = require('./libs/iconDownloader');
     const tabMsgIds = await page.evaluate(() => {
         //const liMessages = document.querySelectorAll('li[id^=ember]');
         const liMessages = document.querySelectorAll("li[class^=msg-conversation-listitem]")
+        const userNames = document.querySelectorAll(".msg-conversation-listitem__participant-names");
+
+
+
+        let usersFound: any[] = [];
+        for ( let i in userNames ) {
+            let htmlElement: any = userNames[i];
+            console.log(htmlElement.innerText)
+            if ( htmlElement.innerText ) {
+                usersFound.push(usersFound, htmlElement.innerText)
+            } else {
+                usersFound.push(usersFound, "")
+            }
+        }
+
         let collectId: any[] = [];
         console.log(liMessages.length)
 
@@ -71,11 +86,21 @@ const libsIcon = require('./libs/iconDownloader');
      });
 
 
+
      const timer = (ms:any) => new Promise(res => setTimeout(res, ms))
      async function load (liMessage: any[]) {
+         console.log(liMessage);
         for ( let i = 0; i < liMessage.length; i++ ){
+                
+            // Map user with the corresponding tab message
             await page.click(`li#${liMessage[i]}`);
-            await timer(6000)
+
+            await timer(2000)
+            let messagesContents = await page.$$eval('.msg-s-message-list__event', (msgContent:any) => msgContent)
+            console.log(messagesContents.length)
+            console.log(messagesContents[0])
+            await timer(2000)
+            console.log("--------------------------------------------------")
         }
      }
 
