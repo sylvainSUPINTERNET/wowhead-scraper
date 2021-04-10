@@ -1,5 +1,7 @@
 'use strict';
 
+import IOptions from "./libs/interfaces/IOptions";
+
 const path = require('path');
 
 const puppeteer = require('puppeteer');
@@ -30,81 +32,88 @@ const libsIcon = require('./libs/iconDownloader');
     await page.waitForNavigation()
     await page.waitForTimeout(4000)
 
-    /*
-    const radios = await page.$$eval('svg', (uses:any) => { return uses.map((u:any) => u) })
-    console.log(radios);
-    radios.map( (r:any) => console.log(r))
-
-    const t = await page.$$("use");
-
-    console.log(t);
-    t.map( (elementHandle: any) => console.log(elementHandle.outerHTML))
-      */
-    //t.map( (use:any) => console.log(use.getAttribute('href')))
-
-    //const metaAttribute = await page.$eval("[data-test-global-nav-link=messaging]", (e: { getAttribute: (arg0: string) => any; }) => e.getAttribute('class'));
-    // /console.log(metaAttribute)
-
     await page.click("[data-test-global-nav-link=messaging]")
     await page.waitForTimeout(4000)
 
-
-
     await page.waitForSelector('li[class^=msg-conversation-listitem]');
-    //const messagesTab = await page.$$eval('li[id^=ember]', (liMessage:any) => liMessage)
-    //messagesTab.map( (m:any) => console.log(m.id))
     await page.waitForTimeout(4000)
+    
 
-    const tabMsgIds = await page.evaluate(() => {
-        //const liMessages = document.querySelectorAll('li[id^=ember]');
-        const liMessages = document.querySelectorAll("li[class^=msg-conversation-listitem]")
+    const tabMsgIds = await page.evaluate(() => {        
         const userNames = document.querySelectorAll(".msg-conversation-listitem__participant-names");
-
-
-
         let usersFound: any[] = [];
         for ( let i in userNames ) {
             let htmlElement: any = userNames[i];
-            console.log(htmlElement.innerText)
-            if ( htmlElement.innerText ) {
-                usersFound.push(usersFound, htmlElement.innerText)
+            if ( htmlElement ) {
+                usersFound.push(htmlElement.innerText)
             } else {
                 usersFound.push(usersFound, "")
             }
         }
-
+        
+        const liMessages = document.querySelectorAll("li[class^=msg-conversation-listitem]")
         let collectId: any[] = [];
-        console.log(liMessages.length)
-
         for ( let i in liMessages ) {
-            console.log(liMessages[i].id )
             if ( liMessages[i].id ) collectId.push(liMessages[i].id);
         }
+
+
+        
         return new Promise( (resolve, reject) => {
-            resolve(collectId)
+            resolve({"collectIds": collectId, "userNames": usersFound})
         })
      });
 
 
 
      const timer = (ms:any) => new Promise(res => setTimeout(res, ms))
-     async function load (liMessage: any[]) {
-         console.log(liMessage);
-        for ( let i = 0; i < liMessage.length; i++ ){
+     async function load (liMessage: any[], usersNames: any[], options: IOptions) : Promise<boolean> {
+        
+        let limitMsgToParse = options.parseMessagesLimit !== null ? options.parseMessagesLimit : liMessage.length;
+
+        console.log("Parse with options: ")
+        console.log(options)
+
+        let completed:any[] = [];
+        for ( let i = 0; i < limitMsgToParse; i++ ){
                 
             // Map user with the corresponding tab message
             await page.click(`li#${liMessage[i]}`);
+            console.log(`Looking for ${usersNames[i]} messages ... `)
 
             await timer(2000)
-            let messagesContents = await page.$$eval('.msg-s-message-list__event', (msgContent:any) => msgContent)
-            console.log(messagesContents.length)
-            console.log(messagesContents[0])
+            let messagesContents = await page.$$eval('.msg-s-message-list__event', (msgsContents:any) => msgsContents.map( (el:HTMLElement) => el.innerText))
+            
+
+            console.log(`Result : `)
+            completed = [...completed, {
+                userName: usersNames[i],
+                messagesSend: messagesContents
+            }]
+            console.log(completed),
+
+
             await timer(2000)
             console.log("--------------------------------------------------")
+            console.log("--------------------------------------------------")
+            console.log("--------------------------------------------------")
+
         }
+
+        return new Promise( resolve => {
+            resolve(true);
+        })
      }
 
-     load(tabMsgIds)
+     console.log("== TAB LOG ==")
+     const {collectIds, userNames} = tabMsgIds; 
+
+    
+     const options: IOptions = {
+        parseMessagesLimit: null
+     }
+     const isEnd = await load(collectIds, userNames, options);
+     console.log("Treatement is end : ", isEnd);
      /*
      tabMsgIds.map( async (id: any) => {
          console.log(id)
