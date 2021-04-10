@@ -9,8 +9,13 @@ const puppeteer = require('puppeteer');
 const libsIcon = require('./libs/iconDownloader');
 
 
+const linkedinMessageAnalysis = async (limit: any) => {
 
-(async () => {
+    // Manage options received
+    if ( !limit ) {
+        limit = null
+    }
+
     console.log("Starting  ...")
     const browser = await puppeteer.launch({ headless:false, executablePath: 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe' });
     const page = await browser.newPage();
@@ -39,7 +44,20 @@ const libsIcon = require('./libs/iconDownloader');
     await page.waitForTimeout(4000)
     
 
-    const tabMsgIds = await page.evaluate(() => {        
+    const tabMsgIds = await page.evaluate(() => {      
+        const usersTitle = document.querySelectorAll("div[title]");
+        let usersTitleFound: any[] = [];
+        
+        for ( let i in usersTitle ) {
+            let htmlElement: any = usersTitle[i];
+            if ( htmlElement ) {
+                usersTitleFound.push(htmlElement.outerText)
+            } else {
+                usersTitleFound.push("")
+            }
+        }
+        console.log(usersTitle[0])
+
         const userNames = document.querySelectorAll(".msg-conversation-listitem__participant-names");
         let usersFound: any[] = [];
         for ( let i in userNames ) {
@@ -47,7 +65,7 @@ const libsIcon = require('./libs/iconDownloader');
             if ( htmlElement ) {
                 usersFound.push(htmlElement.innerText)
             } else {
-                usersFound.push(usersFound, "")
+                usersFound.push("")
             }
         }
         
@@ -60,14 +78,14 @@ const libsIcon = require('./libs/iconDownloader');
 
         
         return new Promise( (resolve, reject) => {
-            resolve({"collectIds": collectId, "userNames": usersFound})
+            resolve({"collectIds": collectId, "userNames": usersFound, "userTitles": usersTitleFound})
         })
      });
 
 
 
      const timer = (ms:any) => new Promise(res => setTimeout(res, ms))
-     async function load (liMessage: any[], usersNames: any[], options: IOptions) : Promise<boolean> {
+     async function load (liMessage: any[], usersNames: any[], userTitles: any[], options: IOptions) : Promise<any> {
         
         let limitMsgToParse = options.parseMessagesLimit !== null ? options.parseMessagesLimit : liMessage.length;
 
@@ -79,7 +97,7 @@ const libsIcon = require('./libs/iconDownloader');
                 
             // Map user with the corresponding tab message
             await page.click(`li#${liMessage[i]}`);
-            console.log(`Looking for ${usersNames[i]} messages ... `)
+            console.log(`Looking for ${usersNames[i]} - ${userTitles[0]} messages ... `)
 
             await timer(2000)
             let messagesContents = await page.$$eval('.msg-s-message-list__event', (msgsContents:any) => msgsContents.map( (el:HTMLElement) => el.innerText))
@@ -88,9 +106,10 @@ const libsIcon = require('./libs/iconDownloader');
             console.log(`Result : `)
             completed = [...completed, {
                 userName: usersNames[i],
+                userTitle: userTitles[i],
                 messagesSend: messagesContents
             }]
-            console.log(completed),
+            console.log(completed);
 
 
             await timer(2000)
@@ -101,19 +120,20 @@ const libsIcon = require('./libs/iconDownloader');
         }
 
         return new Promise( resolve => {
-            resolve(true);
+            resolve(completed);
         })
      }
 
      console.log("== TAB LOG ==")
-     const {collectIds, userNames} = tabMsgIds; 
+     const {collectIds, userNames, userTitles} = tabMsgIds; 
 
     
      const options: IOptions = {
-        parseMessagesLimit: null
+        parseMessagesLimit: limit
      }
-     const isEnd = await load(collectIds, userNames, options);
-     console.log("Treatement is end : ", isEnd);
+     const completedTask = await load(collectIds, userNames, userTitles, options);
+     console.log("Treatement is over");
+     console.log(completedTask);
      /*
      tabMsgIds.map( async (id: any) => {
          console.log(id)
@@ -155,10 +175,23 @@ const libsIcon = require('./libs/iconDownloader');
     */
     
 
-    //console.log("END")
-    //await browser.close();
+    console.log("End and closing browser")
+    await browser.close();
+    console.log("browser closed.")
 
-})();
+    return new Promise( (resolve, reject) => {
+        resolve(completedTask);
+    })
+}
+
+
+export default linkedinMessageAnalysis;
+
+
+/*
+(async () => {
+
+})();*/
 
 
 
