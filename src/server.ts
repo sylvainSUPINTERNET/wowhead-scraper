@@ -1,12 +1,18 @@
 'use strict';
 
+require('dotenv').config()
+
+
 import express from 'express';
 import linkedinMessageAnalysis from './main';
+import DbClient from "./db/client";
 
 const app = express();
 const bodyParser = require('body-parser');
 
 const PORT = process.env.PORT || 3000;
+
+const mongoClient = DbClient.getConnection();
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
