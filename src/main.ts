@@ -9,8 +9,7 @@ const puppeteer = require('puppeteer');
 const libsIcon = require('./libs/iconDownloader');
 
 
-const linkedinMessageAnalysis = async (limit: any) => {
-
+const linkedinMessageAnalysis = async (limit: any, credentials: AccountCredentials) => {
     // Manage options received
     if ( !limit ) {
         limit = null
@@ -30,8 +29,8 @@ const linkedinMessageAnalysis = async (limit: any) => {
 
     await page.goto('https://www.linkedin.com/uas/login');
 
-    await page.$eval('#username', (el: any) => el.value = "");
-    await page.$eval('#password', (el: any) => el.value = "");
+    await page.$eval('#username', (el: any) => el.value = credentials.login);
+    await page.$eval('#password', (el: any) => el.value = credentials.password);
     await page.click('button[type="submit"]');
 
     await page.waitForNavigation()

@@ -38,7 +38,7 @@ app.get('/bot', authentication, async (req: express.Request, res: express.Respon
 
     console.log(credentials);
 
-    const completed = await linkedinMessageAnalysis(limit);
+    const completed = await linkedinMessageAnalysis(limit, credentials);
     console.log(completed);
 
     res.status(200).json({
