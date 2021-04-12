@@ -10,6 +10,7 @@ import express from 'express';
 import linkedinMessageAnalysis from './main';
 import DbClient from "./db/client";
 import authentication from './middleware/authentication';
+import LinkedinMessagesService from './libs/services/LinkedinMessagesService';
 
 const app = express();
 const bodyParser = require('body-parser');
@@ -21,8 +22,6 @@ const options = {
     key:fs.readFileSync('C:\\Users\\Sylvain\\AppData\\Local\\mkcert\\localhost-key.pem', 'utf8'),
 }
 const PORT = process.env.PORT || 4999;
-
-const mongoClient = DbClient.getConnection();
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -36,17 +35,18 @@ app.get('/bot', authentication, async (req: express.Request, res: express.Respon
     //@ts-ignore
     let {credentials} = req;
 
-    console.log(credentials);
+    const completed:Array<LinkedinMessages> = await linkedinMessageAnalysis(limit, credentials);
 
-    const completed = await linkedinMessageAnalysis(limit, credentials);
-    console.log(completed);
+    //await LinkedinMessagesService.saveMessage(completed, DbClient.getConnection())
+
+ 
 
     res.status(200).json({
         action,
         target,
         where,  
         limit,
-        completed
+        messages: completed
     });
  });
   

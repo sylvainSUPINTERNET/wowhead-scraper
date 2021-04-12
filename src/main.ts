@@ -9,11 +9,12 @@ const puppeteer = require('puppeteer');
 const libsIcon = require('./libs/iconDownloader');
 
 
-const linkedinMessageAnalysis = async (limit: any, credentials: AccountCredentials) => {
+const linkedinMessageAnalysis = async (limit: any, credentials: AccountCredentials): Promise<Array<LinkedinMessages>> => {
     // Manage options received
     if ( !limit ) {
         limit = null
     }
+
 
     console.log("Starting  ...")
     const browser = await puppeteer.launch({ headless:false, executablePath: 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe' });
@@ -29,8 +30,9 @@ const linkedinMessageAnalysis = async (limit: any, credentials: AccountCredentia
 
     await page.goto('https://www.linkedin.com/uas/login');
 
-    await page.$eval('#username', (el: any) => el.value = credentials.login);
-    await page.$eval('#password', (el: any) => el.value = credentials.password);
+    await page.$eval('#username', (el: any, credentials: AccountCredentials) => el.value = credentials.login, credentials);
+    await page.$eval('#password', (el: any, credentials: AccountCredentials) => el.value = credentials.password, credentials);
+    await page.waitForTimeout(4000)
     await page.click('button[type="submit"]');
 
     await page.waitForNavigation()
@@ -177,9 +179,13 @@ const linkedinMessageAnalysis = async (limit: any, credentials: AccountCredentia
     console.log("End and closing browser")
     await browser.close();
     console.log("browser closed.")
+    
+    const dataMessagesList: Array<LinkedinMessages> = completedTask.map( (msg:any) => <LinkedinMessages>{content: msg.messagesSend, username: msg.userName, jobTitle: msg.userTitle, createdAt: new Date().toISOString(),updatedAt: null,parsedByUserEmail:credentials.login})
+
+    //let response = completedTask.map( msg => new LinkedinMessage())
 
     return new Promise( (resolve, reject) => {
-        resolve(completedTask);
+        resolve(dataMessagesList);
     })
 }
 
