@@ -7,7 +7,7 @@ let fs = require('fs');
 
 
 import express from 'express';
-import {linkedinMessageAnalysis, bumbleBotSwapper} from './main';
+import {linkedinMessageAnalysis, bumbleBotSwipe} from './main';
 import DbClient from "./db/client";
 import authentication from './middleware/authentication';
 import LinkedinMessagesService from './libs/services/LinkedinMessagesService';
@@ -35,13 +35,11 @@ app.use(bodyParser.json());
 
 
 app.get('/bot/swapper/bumble', authentication, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-
+    const { numberOfSwipe } = req.query;
     //@ts-ignore
     let {credentials} = req;
-    const dataSwapper = await bumbleBotSwapper(credentials);
-
-
-    res.status(200).json({ "message" : dataSwapper});
+    const dataSwapper = await bumbleBotSwipe(numberOfSwipe, credentials);
+    res.status(200).json({ "message" : dataSwapper, numberOfSwipe});
 })
 
 

@@ -1,6 +1,7 @@
 'use strict';
 
 import IOptions from "./libs/interfaces/IOptions";
+import { generateRandomInt, generateSwipeAction, getRandomDelay, timer } from "./libs/utils/generateRandom";
 
 const path = require('path');
 
@@ -9,7 +10,7 @@ const puppeteer = require('puppeteer');
 const libsIcon = require('./libs/iconDownloader');
 
 
-export const bumbleBotSwapper = async (credentials: AccountCredentials): Promise<any> => {
+export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCredentials): Promise<any> => {
     console.log("Starting bumble bot swapper ...");
 
     const browser = await puppeteer.launch({ headless:false, executablePath: 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe' });
@@ -33,8 +34,42 @@ export const bumbleBotSwapper = async (credentials: AccountCredentials): Promise
       await popup.$eval("#pass", (el: any, credentials: AccountCredentials) => el.value = credentials.password, credentials);
       await popup.waitForTimeout(4000)
       await popup.click('input[type="submit"]');
+
+
+      // Waiting for page fully loaded
+      await page.waitForTimeout(15000);
+
+
+      // Loop is schedule
+      // on donne l'heure de fin et ça loop tant que l'heure de fin de correspond pas (dans la limite du raisonable)
+      // Todo faking time itnerval between each call 
+      // Todo faking action 
+
+      console.log(`Total swipe expected : ${numberOfSwipe}`);
+
+      for ( let i = 0; i < parseInt(numberOfSwipe); i++) {
+            console.log(` > Swipe : ${i}`);
+            let delay = getRandomDelay(9e3, 20e3);
+            console.log(` > Delay : ${delay} ms`);
+            await timer(delay);
+            let { name } = generateSwipeAction()
+            console.log(` > Generated swipe action : ${name}`);
+            await page.keyboard.press(name);
+      }
       
-      console.log("POPUP", popup);
+      
+
+
+      //  Faking behavior (interessting / not interessting);
+      /*
+      let actionSwap = "";
+      generateRandomInt(2) === 1 ? actionSwap = "ArrowRight" : actionSwap = "ArrowLeft";*/
+      
+
+      //await page.keyboard.press('ArrowRight');
+      //const test = await page.waitForSelector('#main > div > div.page__layout > main > div.page__content-inner > div > div > span > div:nth-child(1) > article > div.encounters-album__nav > div.encounters-album__nav-item.is-disabled.encounters-album__nav-item--prev')
+     
+      //console.log("PAGE PROFILE", test);
       //await popup.waitForSelector('[name="__CONFIRM__"]')
 
     //   const [popup]:any = await Promise.all([
@@ -132,7 +167,6 @@ export const linkedinMessageAnalysis = async (limit: any, credentials: AccountCr
 
 
 
-     const timer = (ms:any) => new Promise(res => setTimeout(res, ms))
      async function load (liMessage: any[], usersNames: any[], userTitles: any[], options: IOptions) : Promise<any> {
         
         let limitMsgToParse = options.parseMessagesLimit !== null ? options.parseMessagesLimit : liMessage.length;
