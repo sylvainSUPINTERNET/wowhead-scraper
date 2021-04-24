@@ -7,13 +7,16 @@ let fs = require('fs');
 
 
 import express from 'express';
-import linkedinMessageAnalysis from './main';
+import {linkedinMessageAnalysis, bumbleBotSwapper} from './main';
 import DbClient from "./db/client";
 import authentication from './middleware/authentication';
 import LinkedinMessagesService from './libs/services/LinkedinMessagesService';
 
 const app = express();
 const bodyParser = require('body-parser');
+
+
+
 
 // using mkcert
 // https://blog.bitsrc.io/using-https-for-local-development-for-react-angular-and-node-fdfaf69693cd
@@ -28,6 +31,20 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 
+
+
+
+app.get('/bot/swapper/bumble', authentication, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+
+    //@ts-ignore
+    let {credentials} = req;
+    const dataSwapper = await bumbleBotSwapper(credentials);
+
+
+    res.status(200).json({ "message" : dataSwapper});
+})
+
+
 // https://localhost:3000/bot?action=analysis&target=messages&where=linkedin&limit=2
 app.get('/bot', authentication, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     let {where, action, target, limit} = req.query;
@@ -37,7 +54,7 @@ app.get('/bot', authentication, async (req: express.Request, res: express.Respon
 
     const completed:Array<LinkedinMessages> = await linkedinMessageAnalysis(limit, credentials);
 
-    //await LinkedinMessagesService.saveMessage(completed, DbClient.getConnection())
+    await LinkedinMessagesService.saveMessage(completed, DbClient)
 
  
 

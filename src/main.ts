@@ -9,7 +9,54 @@ const puppeteer = require('puppeteer');
 const libsIcon = require('./libs/iconDownloader');
 
 
-const linkedinMessageAnalysis = async (limit: any, credentials: AccountCredentials): Promise<Array<LinkedinMessages>> => {
+export const bumbleBotSwapper = async (credentials: AccountCredentials): Promise<any> => {
+    console.log("Starting bumble bot swapper ...");
+
+    const browser = await puppeteer.launch({ headless:false, executablePath: 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe' });
+    const page = await browser.newPage();
+    await page.setViewport({
+        width: 1920,
+        height: 1280,
+        deviceScaleFactor: 1,
+      });
+      await page.goto('https://bumble.com/');
+      await page.click('a[class="button button--block js-event-link"]');
+      await page.waitForTimeout(2000)
+      const btnLoginFb = await page.waitForSelector('#main > div > div.page__layout > div.page__content > main > div > div.registration__form > form > div:nth-child(1) > div > div:nth-child(2) > div', {visible: true})
+      btnLoginFb.click();
+
+      const newPagePromise = new Promise(x => browser.once('targetcreated', (target:any) => x(target.page()))); 
+      const popup:any  = await newPagePromise;
+      const acceptCookies = await popup.waitForSelector('button[data-testid="cookie-policy-dialog-accept-button"]')
+      acceptCookies.click();
+      await popup.$eval("#email", (el: any, credentials: AccountCredentials) => el.value = credentials.login, credentials);
+      await popup.$eval("#pass", (el: any, credentials: AccountCredentials) => el.value = credentials.password, credentials);
+      await popup.waitForTimeout(4000)
+      await popup.click('input[type="submit"]');
+      
+      console.log("POPUP", popup);
+      //await popup.waitForSelector('[name="__CONFIRM__"]')
+
+    //   const [popup]:any = await Promise.all([
+    //     new Promise((resolve) => page.once('popup', resolve)),
+    //     console.log("NEW MODAL DETECTED"),
+    //     page.click('#u_0_8_9J')
+    //     //page.click('a[target=_blank]')
+    //   ]);
+
+
+      /*
+      const btnFbLoginDiv = await page.$$("div > .button--filled")
+      btnFbLoginDiv.click();    
+      */
+
+    return new Promise( (resolve, reject) => {
+        resolve("Hello World swapper");
+    }) 
+}
+
+
+export const linkedinMessageAnalysis = async (limit: any, credentials: AccountCredentials): Promise<Array<LinkedinMessages>> => {
     // Manage options received
     if ( !limit ) {
         limit = null
@@ -190,7 +237,6 @@ const linkedinMessageAnalysis = async (limit: any, credentials: AccountCredentia
 }
 
 
-export default linkedinMessageAnalysis;
 
 
 /*
