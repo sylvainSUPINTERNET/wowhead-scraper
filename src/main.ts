@@ -50,9 +50,37 @@ export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCre
       for ( let i = 0; i < parseInt(numberOfSwipe); i++) {
             console.log(` > Swipe : ${i}`);
             let delay = getRandomDelay(9e3, 20e3);
+
+
+
+            /**
+             * Get interessting content
+             */
+
+            const profile = {
+                "name": "",
+                "age": "",
+                "proTitle" : ""
+            } 
+            try {
+                profile.name = await page.$eval("span.encounters-story-profile__name", (elem:any) => elem.innerText)
+                profile.age = await page.$eval("span.encounters-story-profile__age", (elem:any) => elem.innerText)
+                profile.proTitle = await page.$eval("#main > div > div.page__layout > main > div.page__content-inner > div > div > span > div:nth-child(1) > article > div.encounters-album__stories-container > div:nth-child(1) > article > div:nth-child(2) > section > div > div > p", (elem:any) => elem.innerText);
+            } catch ( e ) {
+            }
+
+                                
+            console.log(`== PROFILE ${profile.name} ==`)
+            console.log(` > age : ${profile.age}`)
+            console.log(` > Pro (with): ${profile.proTitle}`)
+
+
+
+
+
             console.log(` > Delay : ${delay} ms`);
             await timer(delay);
-            let { name } = generateSwipeAction()
+            let { name } = generateSwipeAction(true); // generate only NO swipe -avoid shitty modal-
             console.log(` > Generated swipe action : ${name}`);
             await page.keyboard.press(name);
       }
