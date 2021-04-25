@@ -47,6 +47,8 @@ export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCre
 
     console.log(`Total swipe expected : ${numberOfSwipe}`);
 
+
+    let collectedProfiles: any[] = [];
     for (let i = 0; i < parseInt(numberOfSwipe); i++) {
         console.log(` > Swipe : ${i}`);
         let delay = getRandomDelay(9e3, 20e3);
@@ -71,7 +73,9 @@ export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCre
             "liveIn": "",
             "from": "",
             "hobbies": [] as Array<any>,
-            "musics": [] as Array<any>
+            "musics": [] as Array<any>,
+            "createdAt": "",
+            "updatedAt": ""
         }
 
         try {
@@ -194,39 +198,18 @@ export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCre
         await timer(delay);
         let { name } = generateSwipeAction(true); // generate only NO swipe -avoid shitty modal-
         console.log(` > Generated swipe action : ${name}`);
+        profile.updatedAt = new Date().toISOString();
+        profile.createdAt = new Date().toISOString();
+        collectedProfiles = [...collectedProfiles, profile];
         await page.keyboard.press(name);
+        
     }
 
-
-
-
-    //  Faking behavior (interessting / not interessting);
-    /*
-    let actionSwap = "";
-    generateRandomInt(2) === 1 ? actionSwap = "ArrowRight" : actionSwap = "ArrowLeft";*/
-
-
-    //await page.keyboard.press('ArrowRight');
-    //const test = await page.waitForSelector('#main > div > div.page__layout > main > div.page__content-inner > div > div > span > div:nth-child(1) > article > div.encounters-album__nav > div.encounters-album__nav-item.is-disabled.encounters-album__nav-item--prev')
-
-    //console.log("PAGE PROFILE", test);
-    //await popup.waitForSelector('[name="__CONFIRM__"]')
-
-    //   const [popup]:any = await Promise.all([
-    //     new Promise((resolve) => page.once('popup', resolve)),
-    //     console.log("NEW MODAL DETECTED"),
-    //     page.click('#u_0_8_9J')
-    //     //page.click('a[target=_blank]')
-    //   ]);
-
-
-    /*
-    const btnFbLoginDiv = await page.$$("div > .button--filled")
-    btnFbLoginDiv.click();    
-    */
+    console.log("Profiles collected with success, stop the bot ...")
+    await browser.close();
 
     return new Promise((resolve, reject) => {
-        resolve("Hello World swapper");
+        resolve(collectedProfiles);
     })
 }
 

@@ -11,6 +11,7 @@ import {linkedinMessageAnalysis, bumbleBotSwipe} from './main';
 import DbClient from "./db/client";
 import authentication from './middleware/authentication';
 import LinkedinMessagesService from './libs/services/LinkedinMessagesService';
+import BumbleProfilesService from './libs/services/BumbleProfilesServices';
 
 const app = express();
 const bodyParser = require('body-parser');
@@ -33,13 +34,15 @@ app.use(bodyParser.json());
 
 
 
-
+// https://localhost:3000/bot/swapper/bumble?numberOfSwipe=2
 app.get('/bot/swapper/bumble', authentication, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const { numberOfSwipe } = req.query;
     //@ts-ignore
     let {credentials} = req;
-    const dataSwapper = await bumbleBotSwipe(numberOfSwipe, credentials);
-    res.status(200).json({ "message" : dataSwapper, numberOfSwipe});
+    const colllectedProfiles = await bumbleBotSwipe(numberOfSwipe, credentials);
+    const resp = await BumbleProfilesService.saveProfile(colllectedProfiles, DbClient);
+
+    res.status(200).json({ "profiles" : colllectedProfiles, numberOfSwipe});
 })
 
 
@@ -53,8 +56,6 @@ app.get('/bot', authentication, async (req: express.Request, res: express.Respon
     const completed:Array<LinkedinMessages> = await linkedinMessageAnalysis(limit, credentials);
 
     await LinkedinMessagesService.saveMessage(completed, DbClient)
-
- 
 
     res.status(200).json({
         action,

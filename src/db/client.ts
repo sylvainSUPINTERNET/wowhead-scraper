@@ -9,6 +9,7 @@ class DbClient {
     DbClient:any;
 
     LinkedinMessagesCollection: any;
+    BumbleProfileCollection: any;
 
     
     constructor(){
@@ -21,7 +22,8 @@ class DbClient {
                 this.DbClient = client.db(this.dbName);
                 
                 // Init models
-                this.LinkedinMessagesCollection = client.collection("linkedinMessages");
+                this.LinkedinMessagesCollection = this.DbClient.collection("linkedinMessages");
+                this.BumbleProfileCollection = this.DbClient.collection("bumbleProfiles");
 
                 console.log("MongoDB client created successfully")
             }  else {
