@@ -28,3 +28,22 @@ Récupération de l'image (il faudra parser le src pour choper le nom de l'image
 
 Content qui faut mapper avec l'image trouver
 #main > div > div.page__layout > main > div.page__content-inner > div > div > span > div:nth-child(1) > article > div.encounters-album__stories-container > div:nth-child(2) > article > div > section > div > ul > li:nth-child(1) > div > div.pill__title > div
+
+habite à 
+#main > div > div.page__layout > main > div.page__content-inner > div > div > span > div:nth-child(1) > article > div.encounters-album__stories-container > div:nth-child(5) > article > div:nth-child(2) > section > div > section > div.location-widget__info > div > div > div > div
+
+
+name of artist
+#main > div > div.page__layout > main > div.page__content-inner > div > div > span > div:nth-child(1) > article > div.encounters-album__stories-container > div:nth-child(4) > article > div:nth-child(2) > section.encounters-story-section.encounters-story-section--spotify > div > aside > ul > li:nth-child(1) > div.spotify-widget__artist-name
+
+artist pic URL
+#main > div > div.page__layout > main > div.page__content-inner > div > div > span > div:nth-child(1) > article > div.encounters-album__stories-container > div:nth-child(4) > article > div:nth-child(2) > section.encounters-story-section.encounters-story-section--spotify > div > aside > ul > li:nth-child(1) > div.spotify-widget__artist-photo
+
+#main > div > div.page__layout > main > div.page__content-inner > div > div > span > div:nth-child(1) > article > div.encounters-album__stories-container > div:nth-child(2) > article > div > section > div > p
+
+#main > div > div.page__layout > main > div.page__content-inner > div > div > span > div:nth-child(1) > article > div.encounters-album__stories-container > div:nth-child(4) > article > div:nth-child(2) > section > div > section > div.location-widget__info > div:nth-child(2) > div > div > div
+
+
+#main > div > div.page__layout > main > div.page__content-inner > div > div > span > div:nth-child(1) > article > div.encounters-album__stories-container > div:nth-child(5) > article > div:nth-child(2) > section.encounters-story-section.encounters-story-section--spotify > div > aside > ul > li:nth-child(1) > div.spotify-widget__artist-photo
+
+#main > div > div.page__layout > main > div.page__content-inner > div > div > span > div:nth-child(1) > article > div.encounters-album__stories-container > div:nth-child(5) > article > div:nth-child(2) > section.encounters-story-section.encounters-story-section--spotify > div > aside > ul > li:nth-child(1) > div.spotify-widget__artist-name
