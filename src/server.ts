@@ -33,6 +33,20 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 
+app.get('/bot/swapper/bumble/export', authentication, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+
+    //TODO pagiantion
+    //TODO bulk insert ?
+    // TODO format checker
+
+    const {format} = req.query;
+    /*
+    const convertResult = await convertTo()
+
+    res.status(200).json({profiles, format})*/
+    res.status(200).json("salut");
+})
+
 
 // https://localhost:3000/bot/swapper/bumble?numberOfSwipe=2
 app.get('/bot/swapper/bumble', authentication, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -42,6 +56,7 @@ app.get('/bot/swapper/bumble', authentication, async (req: express.Request, res:
     const colllectedProfiles = await bumbleBotSwipe(numberOfSwipe, credentials);
     const resp = await BumbleProfilesService.saveProfile(colllectedProfiles, DbClient);
 
+    // https://practicalprogramming.fr/mongodb-index
     res.status(200).json({ "profiles" : colllectedProfiles, numberOfSwipe});
 })
 
