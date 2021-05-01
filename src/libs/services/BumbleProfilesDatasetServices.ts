@@ -1,11 +1,10 @@
 'use strict';
 
+import fs from "fs";
 import * as csv from 'fast-csv';
 import { BumbleProfile } from '../../db/documents/BumbleProfiles';
-const csvStream = csv.format({ headers: true });
 
-
-interface AllowedFormatDataset {
+export interface AllowedFormatDataset {
    format: "csv"
 }
 
@@ -20,10 +19,11 @@ export default {
         //await cursorProfiles.forEach( (data:any) => console.log(data))
         const profiles: Array<ProfileCsv> = await cursorProfiles.toArray();
 
-        const csvGenerated = await csvOutput(profiles);
+        const csvOutputResult = await csvOutput(profiles);
+        console.log("GENERATED")
 
         return new Promise( (resolve, reject) => {
-            resolve("CONVERT TEST");
+            resolve(csvOutputResult);
         }) 
     }
 }
@@ -31,8 +31,21 @@ export default {
 
 
 const csvOutput  = async (profiles : Array<ProfileCsv>): Promise<any> => {
-    
+    // https://nodesource.com/blog/understanding-streams-in-nodejs/
+
+    const csvStream = csv.format({ headers: true });
+    const writable:any = fs.createWriteStream("./test.csv")
+
+    profiles.map( async profile => {
+        csvStream.write(profile);
+    })
+
+    csvStream.end()
+    csvStream.pipe(writable).on('end', () => process.exit());
+
+    console.log("CSV OUTPUT PROCESSING")
+
     return new Promise( (resolve, reject) => {
-        resolve("CSV OUTPUT")
+        resolve(writable)
     })
 }

@@ -12,11 +12,10 @@ import DbClient from "./db/client";
 import authentication from './middleware/authentication';
 import LinkedinMessagesService from './libs/services/LinkedinMessagesService';
 import BumbleProfilesService from './libs/services/BumbleProfilesServices';
+import BumbleProfilesDatasetServices, {AllowedFormatDataset} from './libs/services/BumbleProfilesDatasetServices';
 
 const app = express();
 const bodyParser = require('body-parser');
-
-
 
 
 // using mkcert
@@ -33,18 +32,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 
-app.get('/bot/swapper/bumble/export', authentication, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-
-    //TODO pagiantion
-    //TODO bulk insert ?
-    // TODO format checker
-
+app.get('/bot/swapper/bumble/export', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const {format} = req.query;
-    /*
-    const convertResult = await convertTo()
-
-    res.status(200).json({profiles, format})*/
-    res.status(200).json("salut");
+    const allowed = <AllowedFormatDataset>{format};
+    const csvWritableResult = await BumbleProfilesDatasetServices.convertTo(allowed, DbClient);
+    const readable = fs.createReadStream("./test.csv");
+    res.header('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=\"' + 'download-' + Date.now() + '.csv\"');
+    res.attachment("analysis_bumble_profiles.csv");
+    readable.pipe(res);
 })
 
 
@@ -80,6 +76,10 @@ app.get('/bot', authentication, async (req: express.Request, res: express.Respon
         messages: completed
     });
  });
+
+
+
+
   
 
 const httpsServer = https.createServer(options, app);
