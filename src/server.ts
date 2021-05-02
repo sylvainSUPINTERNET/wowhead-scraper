@@ -46,7 +46,7 @@ app.get('/bot/swapper/bumble/export', async (req: express.Request, res: express.
             } else {
                 res.header('Content-Type', 'text/csv');
                 res.setHeader('Content-Disposition', 'attachment; filename=\"' + 'download-' + Date.now() + '.csv\"');
-                res.attachment("analysis_bumble_profiles.csv");
+                res.attachment(`${new Date(fileNameGenerated).toISOString()}_analysis.csv`);
                 readable.pipe(res);
             }
         });
