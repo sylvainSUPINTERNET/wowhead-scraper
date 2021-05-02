@@ -33,14 +33,30 @@ app.use(bodyParser.json());
 
 
 app.get('/bot/swapper/bumble/export', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const {format} = req.query;
-    const allowed = <AllowedFormatDataset>{format};
-    const csvWritableResult = await BumbleProfilesDatasetServices.convertTo(allowed, DbClient);
-    const readable = fs.createReadStream("./test.csv");
-    res.header('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename=\"' + 'download-' + Date.now() + '.csv\"');
-    res.attachment("analysis_bumble_profiles.csv");
-    readable.pipe(res);
+    try {
+        const {format} = req.query;
+        const allowed = <AllowedFormatDataset>{format};
+        const {writable, fileNameGenerated} = await BumbleProfilesDatasetServices.convertTo(allowed, DbClient);
+        const readable = fs.createReadStream(`./${fileNameGenerated}.csv`);
+        fs.unlink(`./${fileNameGenerated}.csv`, (err:any) => {
+            if (err) {
+                res
+                .status(400)
+                .json({ "message": "error", "detail": err})
+            } else {
+                res.header('Content-Type', 'text/csv');
+                res.setHeader('Content-Disposition', 'attachment; filename=\"' + 'download-' + Date.now() + '.csv\"');
+                res.attachment("analysis_bumble_profiles.csv");
+                readable.pipe(res);
+            }
+        });
+
+    } catch (e) {
+        res
+        .status(400)
+        .json({ "message": "error", "detail": e})
+    }
+
 })
 
 

@@ -7,7 +7,7 @@ export interface BumbleProfile {
     proTitle:string
     citiesInfo:string
     liveIn:string
-    from:string
+    from:any
     hobbies: Array<any>
     musics: Array<any>
     createdAt: string
