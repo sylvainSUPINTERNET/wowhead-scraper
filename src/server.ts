@@ -1,9 +1,16 @@
 'use strict';
 
+
+
 require('dotenv').config()
 
+import { v4 as uuidv4 } from 'uuid';
+
+const cors = require('cors');
 let https = require('https');
 let fs = require('fs');
+const webSocketServer = require('websocket').server;
+
 
 
 import express from 'express';
@@ -13,6 +20,7 @@ import authentication from './middleware/authentication';
 import LinkedinMessagesService from './libs/services/LinkedinMessagesService';
 import BumbleProfilesService from './libs/services/BumbleProfilesServices';
 import BumbleProfilesDatasetServices, {AllowedFormatDataset} from './libs/services/BumbleProfilesDatasetServices';
+import { generateConnectionId } from './libs/utils/generateWsConnectionId';
 
 const app = express();
 const bodyParser = require('body-parser');
@@ -31,6 +39,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 
+app.use(cors())
 
 app.get('/bot/swapper/bumble/export', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
@@ -95,11 +104,44 @@ app.get('/bot', authentication, async (req: express.Request, res: express.Respon
 
 
 
-
-  
+ //https://blog.logrocket.com/websockets-tutorial-how-to-go-real-time-with-node-and-react-8e4693fbf843/
 
 const httpsServer = https.createServer(options, app);
 httpsServer.listen(PORT, () => {
     console.log(`[API] bot start on port : ${PORT}`);
 });
+
+const wsServer = new webSocketServer({
+    httpServer: httpsServer
+});
+console.log("[API] ws is ready")
+
+
+let clients = <any>{};
+
+wsServer.on('request', async (request: any) => {
+    let uuid = uuidv4();
+
+     // You can rewrite this part of the code to accept only the requests from allowed origin
+     // check this for prod ! => https://www.npmjs.com/package/websocket (not allow all origin !!!)
+    const connection = request.accept(null, request.origin);
+    const subKeyHash =  generateConnectionId();
+    const shareSubKeyHash =  generateConnectionId();
+
+    connection.on('message', async (msg:any) => {
+        if ( msg.type === "utf8") {
+            console.log(msg);
+        }
+    })
+
+    clients[uuid] = connection;
+    console.log("new client created :" + Object.keys(clients).length);
+    clients[uuid].send(JSON.stringify({"message":"bumblePoriflesSubscribe", "subKey": subKeyHash, "subSharedKey": shareSubKeyHash}));
+    
+    /*
+    setInterval( () => {
+        console.log(Object.keys(clients).length);
+    },8000) */
+})
+
 
