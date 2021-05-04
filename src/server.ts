@@ -136,8 +136,8 @@ wsServer.on('request', async (request: any) => {
 
     clients[uuid] = connection;
     console.log("new client created :" + Object.keys(clients).length);
-    clients[uuid].send(JSON.stringify({"message":"bumblePoriflesSubscribe", "subKey": subKeyHash, "subSharedKey": shareSubKeyHash}));
-    
+    clients[uuid].send(JSON.stringify(<IWSMessageNewSubBumbleAnalysisProfiles>{"source": WSMesageSource.BUMBLE_WEB, "type": WSMessageType.NEW_SUB_BUMBLE_ANALYSIS_PROFILES,"subKey": subKeyHash, "subSharedKey": shareSubKeyHash}));
+
     /*
     setInterval( () => {
         console.log(Object.keys(clients).length);
