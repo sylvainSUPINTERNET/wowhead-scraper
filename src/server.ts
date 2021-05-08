@@ -21,6 +21,16 @@ import LinkedinMessagesService from './libs/services/LinkedinMessagesService';
 import BumbleProfilesService from './libs/services/BumbleProfilesServices';
 import BumbleProfilesDatasetServices, {AllowedFormatDataset} from './libs/services/BumbleProfilesDatasetServices';
 import { generateConnectionId } from './libs/utils/generateWsConnectionId';
+import { IWSMessageNewSubBumbleAnalysisProfiles, WSMesageSource, WSMessageType } from './libs/interfaces/IWSMessage';
+
+
+// WS
+let clients = <any>{};
+
+
+const getWSClients = () : any => {
+    return clients;
+}
 
 const app = express();
 const bodyParser = require('body-parser');
@@ -69,12 +79,15 @@ app.get('/bot/swapper/bumble/export', async (req: express.Request, res: express.
 })
 
 
-// https://localhost:3000/bot/swapper/bumble?numberOfSwipe=2
+// https://localhost:3000/bot/swapper/bumble?numberOfSwipe=2&hashKey=<key>
 app.get('/bot/swapper/bumble', authentication, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const { numberOfSwipe } = req.query;
+    const clients = getWSClients();
+    console.log(Object.keys(clients))
+
+    const { numberOfSwipe, hashKey } = req.query;
     //@ts-ignore
     let {credentials} = req;
-    const colllectedProfiles = await bumbleBotSwipe(numberOfSwipe, credentials);
+    const colllectedProfiles = await bumbleBotSwipe(numberOfSwipe, credentials, clients, hashKey);
     const resp = await BumbleProfilesService.saveProfile(colllectedProfiles, DbClient);
 
     // https://practicalprogramming.fr/mongodb-index
@@ -117,7 +130,6 @@ const wsServer = new webSocketServer({
 console.log("[API] ws is ready")
 
 
-let clients = <any>{};
 
 wsServer.on('request', async (request: any) => {
     let uuid = uuidv4();
@@ -134,14 +146,12 @@ wsServer.on('request', async (request: any) => {
         }
     })
 
-    clients[uuid] = connection;
+    clients[`${uuid}::${subKeyHash}::${shareSubKeyHash}`] = connection;
     console.log("new client created :" + Object.keys(clients).length);
-    clients[uuid].send(JSON.stringify(<IWSMessageNewSubBumbleAnalysisProfiles>{"source": WSMesageSource.BUMBLE_WEB, "type": WSMessageType.NEW_SUB_BUMBLE_ANALYSIS_PROFILES,"subKey": subKeyHash, "subSharedKey": shareSubKeyHash}));
 
-    /*
-    setInterval( () => {
-        console.log(Object.keys(clients).length);
-    },8000) */
+    // Send key at connection if you need to get back data / sync
+    clients[`${uuid}::${subKeyHash}::${shareSubKeyHash}`].send(JSON.stringify(<IWSMessageNewSubBumbleAnalysisProfiles>{"source": WSMesageSource.BUMBLE_WEB, "type": WSMessageType.NEW_SUB_BUMBLE_ANALYSIS_PROFILES,"subKey": subKeyHash, "subSharedKey": shareSubKeyHash}));
+
 })
 
 

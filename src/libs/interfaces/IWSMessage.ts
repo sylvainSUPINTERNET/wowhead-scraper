@@ -1,18 +1,18 @@
 'use strict';
-interface IWSMessage {
+export interface IWSMessage {
     source: string;
     type: string;
 }
 
-interface IWSMessageNewSubBumbleAnalysisProfiles extends IWSMessage {
+export interface IWSMessageNewSubBumbleAnalysisProfiles extends IWSMessage {
     subKey: string,
     subSharedKey: string
 }
 
-const WSMessageType = {
+export const WSMessageType = {
     "NEW_SUB_BUMBLE_ANALYSIS_PROFILES": "newSubAnalysisProfiles"
 };
 
-const WSMesageSource = {
+export const WSMesageSource = {
     "BUMBLE_WEB": "bumble-web"
 }

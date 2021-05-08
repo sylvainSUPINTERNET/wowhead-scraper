@@ -10,8 +10,33 @@ const puppeteer = require('puppeteer');
 const libsIcon = require('./libs/iconDownloader');
 
 
-export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCredentials): Promise<any> => {
+export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCredentials, clients:any, hashKey:any): Promise<any> => {
     console.log("Starting bumble bot swapper ...");
+
+    // If in request we received some connections and key, so 
+    // shared or personnal key, use it to find the connection in ws and send the analysis data step by step (profile one by one)
+    // else nominal behavior, retrieve analysis at the end only
+
+
+    let socket:any = null;
+
+    if ( hashKey ) {
+        console.log("hash key send ...")
+        if (clients) {
+            console.log("WS clients detected ...")
+            let clientsNames = Object.keys(clients);
+            let filtered = clientsNames.filter(clientName => clientName.split("::")[1] === hashKey || clientName.split("::")[2] === hashKey);
+            if ( filtered.length > 0 ) {
+                console.log("Client found for this hashkey (shared or personnal) ");
+                socket = filtered[0];
+            } else {
+                console.log("No client found for this hashkey (shared or personnal) ");
+            }
+        }
+    } else {
+        console.log("Ignore WS, no key provided.");
+    }
+
 
     const browser = await puppeteer.launch({ headless: false, executablePath: 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe' });
     const page = await browser.newPage();
