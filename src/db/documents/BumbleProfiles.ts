@@ -12,4 +12,6 @@ export interface BumbleProfile {
     musics: Array<any>
     createdAt: string
     updatedAt: string
+    subKeyUsed: string,
+    subSharedKeyUsed: string
 }

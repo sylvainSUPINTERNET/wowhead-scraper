@@ -3,7 +3,8 @@
 import IOptions from "./libs/interfaces/IOptions";
 import { IWSMessageBumbleAnalysisProfile, WSMesageSource, WSMessageType } from "./libs/interfaces/IWSMessage";
 import { generateRandomInt, generateSwipeAction, getRandomDelay, timer } from "./libs/utils/generateRandom";
-
+import BumbleProfilesService  from "./libs/services/BumbleProfilesServices";
+import { BumbleProfile } from "./db/documents/BumbleProfiles";
 const path = require('path');
 
 const puppeteer = require('puppeteer');
@@ -11,7 +12,7 @@ const puppeteer = require('puppeteer');
 const libsIcon = require('./libs/iconDownloader');
 
 
-export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCredentials, clients:any, subKey:any, shareSubKeyHash:any): Promise<any> => {
+export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCredentials, clients:any, subKey:any, shareSubKeyHash:any, DbClient:any): Promise<any> => {
     console.log("Starting bumble bot swapper ...");
 
     // If in request we received some connections and key, so 
@@ -102,7 +103,9 @@ export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCre
             "hobbies": [] as Array<any>,
             "musics": [] as Array<any>,
             "createdAt": "",
-            "updatedAt": ""
+            "updatedAt": "",
+            "subKeyUsed": "",
+            "subSharedKeyUsed": ""
         }
 
         try {
@@ -222,6 +225,14 @@ export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCre
         console.log(" > Musics : ", profile.musics)
 
         console.log(` > Delay : ${delay} ms`);
+
+        profile.subKeyUsed = subKey;
+        profile.subSharedKeyUsed = shareSubKeyHash;
+        console.log("start insert profile ...")
+        const resp = await BumbleProfilesService.saveProfile(profile, DbClient);
+        
+        console.log(resp);
+
 
         if ( socket !== null ) {
             console.log("Send profile to socket");

@@ -87,8 +87,9 @@ app.get('/bot/swapper/bumble', authentication, async (req: express.Request, res:
     const { numberOfSwipe, subKey, sharedKey } = req.query;
     //@ts-ignore
     let {credentials} = req;
-    const colllectedProfiles = await bumbleBotSwipe(numberOfSwipe, credentials, clients, subKey, sharedKey);
-    const resp = await BumbleProfilesService.saveProfile(colllectedProfiles, DbClient);
+    const colllectedProfiles = await bumbleBotSwipe(numberOfSwipe, credentials, clients, subKey, sharedKey, DbClient);
+    
+    //const resp = await BumbleProfilesService.saveProfiles(colllectedProfiles, DbClient);
 
     // https://practicalprogramming.fr/mongodb-index
     res.status(200).json({ "profiles" : colllectedProfiles, numberOfSwipe});
