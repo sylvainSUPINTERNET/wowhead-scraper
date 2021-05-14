@@ -25,10 +25,12 @@ import { IWSMessageNewSubBumbleAnalysisProfiles, WSMesageSource, WSMessageType }
 
 
 // WS
-let clients = <any>{};
+let clients = {
+    "sockets": <any>{}
+};
 
 
-const getWSClients = () : any => {
+export const getWSClients = () : any => {
     return clients;
 }
 
@@ -81,13 +83,12 @@ app.get('/bot/swapper/bumble/export', async (req: express.Request, res: express.
 
 // https://localhost:3000/bot/swapper/bumble?numberOfSwipe=20&subKey=1b2a394aabe2f86529f9d84a855ea8a9d72f9f7931001e884a48690d507d1972&sharedKey=
 app.get('/bot/swapper/bumble', authentication, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const clients = getWSClients();
-    console.log(Object.keys(clients))
+    console.log("HERE WS", Object.keys(clients))
 
     const { numberOfSwipe, subKey, sharedKey } = req.query;
     //@ts-ignore
     let {credentials} = req;
-    const colllectedProfiles = await bumbleBotSwipe(numberOfSwipe, credentials, clients, subKey, sharedKey, DbClient);
+    const colllectedProfiles = await bumbleBotSwipe(numberOfSwipe, credentials, subKey, sharedKey, DbClient);
     
     //const resp = await BumbleProfilesService.saveProfiles(colllectedProfiles, DbClient);
 
@@ -138,8 +139,33 @@ wsServer.on('request', async (request: any) => {
      // You can rewrite this part of the code to accept only the requests from allowed origin
      // check this for prod ! => https://www.npmjs.com/package/websocket (not allow all origin !!!)
     const connection = request.accept(null, request.origin);
-    const subKeyHash =  generateConnectionId();
-    const shareSubKeyHash =  generateConnectionId();
+
+    // This is connection for synchronization with existing analysis
+    if (request.resourceURL.query.key) {
+        const subKeyHash = request.resourceURL.query.key ;
+        const shareSubKeyHash =  request.resourceURL.query.key;
+    
+        clients.sockets[`${uuid}::${subKeyHash}::${shareSubKeyHash}`] = connection;
+        console.log("new client created (synchronize) :" + Object.keys(clients).length);
+        // Send key at connection if you need to get back data / sync
+        clients.sockets[`${uuid}::${subKeyHash}::${shareSubKeyHash}`].send(JSON.stringify(<IWSMessageNewSubBumbleAnalysisProfiles>{"source": WSMesageSource.BUMBLE_WEB, "type": WSMessageType.NEW_SUB_BUMBLE_ANALYSIS_PROFILES,"subKey": subKeyHash, "subSharedKey": shareSubKeyHash}));
+        
+    } else {
+
+        // Fresh analysis
+        const subKeyHash =  generateConnectionId();
+        const shareSubKeyHash =  generateConnectionId();
+    
+        clients.sockets[`${uuid}::${subKeyHash}::${shareSubKeyHash}`] = connection;
+        console.log("new client created (fresh):" + Object.keys(clients).length);
+    
+        // Send key at connection if you need to get back data / sync
+        clients.sockets[`${uuid}::${subKeyHash}::${shareSubKeyHash}`].send(JSON.stringify(<IWSMessageNewSubBumbleAnalysisProfiles>{"source": WSMesageSource.BUMBLE_WEB, "type": WSMessageType.NEW_SUB_BUMBLE_ANALYSIS_PROFILES,"subKey": subKeyHash, "subSharedKey": shareSubKeyHash}));    
+    }
+
+
+    console.log(clients.sockets);
+
 
     connection.on('message', async (msg:any) => {
         if ( msg.type === "utf8") {
@@ -147,11 +173,6 @@ wsServer.on('request', async (request: any) => {
         }
     })
 
-    clients[`${uuid}::${subKeyHash}::${shareSubKeyHash}`] = connection;
-    console.log("new client created :" + Object.keys(clients).length);
-
-    // Send key at connection if you need to get back data / sync
-    clients[`${uuid}::${subKeyHash}::${shareSubKeyHash}`].send(JSON.stringify(<IWSMessageNewSubBumbleAnalysisProfiles>{"source": WSMesageSource.BUMBLE_WEB, "type": WSMessageType.NEW_SUB_BUMBLE_ANALYSIS_PROFILES,"subKey": subKeyHash, "subSharedKey": shareSubKeyHash}));
 
 })
 

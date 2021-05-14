@@ -11,35 +11,14 @@ const puppeteer = require('puppeteer');
 
 const libsIcon = require('./libs/iconDownloader');
 
+import {getWSClients} from "./server";
 
-export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCredentials, clients:any, subKey:any, shareSubKeyHash:any, DbClient:any): Promise<any> => {
+export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCredentials, /*clients:any,*/ subKey:any, shareSubKeyHash:any, DbClient:any): Promise<any> => {
     console.log("Starting bumble bot swapper ...");
 
     // If in request we received some connections and key, so 
     // shared or personnal key, use it to find the connection in ws and send the analysis data step by step (profile one by one)
     // else nominal behavior, retrieve analysis at the end only
-
-
-    let socket:any = null;
-
-    if ( subKey ) {
-        console.log("hash key send ...")
-        if (clients) {
-            console.log("WS clients detected ...")
-            let clientsNames = Object.keys(clients);
-            let filtered = clientsNames.filter(clientName => clientName.split("::")[1] === subKey || clientName.split("::")[2] === subKey);
-            if ( filtered.length > 0 ) {
-                console.log("Client for following key : ");
-                console.log("subKey :",subKey)
-                console.log("sharedKey :",shareSubKeyHash)
-                socket = clients[filtered[0]];
-            } else {
-                console.log("No client found for this hashkey (shared or personnal) ");
-            }
-        }
-    } else {
-        console.log("Ignore WS, no key provided.");
-    }
 
     const browser = await puppeteer.launch({ headless: false, executablePath: 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe' });
     const page = await browser.newPage();
@@ -233,12 +212,42 @@ export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCre
         
         console.log(resp);
 
+        
+    let socketsTargetName:any = null;
+    let clients = getWSClients();
+    console.log("CLIENT GIVEN ?")
+    console.log(Object.keys(clients.sockets).length);
+    
+    if ( subKey ) {
+        console.log("hash key send ...")
+        if (clients.sockets) {
+            console.log("WS clients detected ...")
+            let clientsNames = Object.keys(clients.sockets);
+            let filtered = clientsNames.filter(clientName => clientName.split("::")[1] === subKey || clientName.split("::")[2] === subKey);
+            if ( filtered.length > 0 ) {
+                console.log("Client for following key : ");
+                console.log("subKey :",subKey)
+                console.log("sharedKey :",shareSubKeyHash)
+                console.log("NUMBER SIMILAR SOCKETS ", filtered)
+                socketsTargetName = filtered;
+            } else {
+                    console.log("No client found for this hashkey (shared or personnal) ");
+                }
+            }
+        } else {
+            console.log("Ignore WS, no key provided.");
+        }
 
-        if ( socket !== null ) {
+        if ( socketsTargetName !== null ) {
             console.log("Send profile to socket");
             console.log("key : ", subKey)
             console.log("sharedKey : ", shareSubKeyHash)
-            socket.send(JSON.stringify(<IWSMessageBumbleAnalysisProfile>{"source": WSMesageSource.BUMBLE_WEB, "type": WSMessageType.BUMBLE_ANALYSIS_ROFILE,"subKey": subKey, "subSharedKey": shareSubKeyHash,...profile}));
+            console.log("TOTAL WS CLIENTS", Object.keys(clients.sockets).length);
+            
+            socketsTargetName.map( (socketName:string) => {
+                console.log("send to ", socketName);
+                clients.sockets[socketName].send(JSON.stringify(<IWSMessageBumbleAnalysisProfile>{"source": WSMesageSource.BUMBLE_WEB, "type": WSMessageType.BUMBLE_ANALYSIS_ROFILE,"subKey": subKey, "subSharedKey": shareSubKeyHash,...profile}));
+            })
         }
 
 
