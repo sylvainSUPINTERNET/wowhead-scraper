@@ -52,39 +52,44 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(cors())
-
+//https://localhost:3000/bot/swapper/bumble/export?key="<key>"
 app.get('/bot/swapper/bumble/export', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    try {
-        const {format} = req.query;
-        const allowed = <AllowedFormatDataset>{format};
-        const {writable, fileNameGenerated} = await BumbleProfilesDatasetServices.convertTo(allowed, DbClient);
-        const readable = fs.createReadStream(`./${fileNameGenerated}.csv`);
-        fs.unlink(`./${fileNameGenerated}.csv`, (err:any) => {
-            if (err) {
-                res
-                .status(400)
-                .json({ "message": "error", "detail": err})
-            } else {
-                res.header('Content-Type', 'text/csv');
-                res.setHeader('Content-Disposition', 'attachment; filename=\"' + 'download-' + Date.now() + '.csv\"');
-                res.attachment(`${new Date(fileNameGenerated).toISOString()}_analysis.csv`);
-                readable.pipe(res);
-            }
-        });
 
-    } catch (e) {
-        res
-        .status(400)
-        .json({ "message": "error", "detail": e})
+    let key = req.query.key;
+    if ( key) {
+        try {
+            const {format} = req.query;
+            const allowed = <AllowedFormatDataset>{format};
+            const {writable, fileNameGenerated} = await BumbleProfilesDatasetServices.convertTo(allowed, DbClient, key);
+            const readable = fs.createReadStream(`./${fileNameGenerated}.csv`);
+            fs.unlink(`./${fileNameGenerated}.csv`, (err:any) => {
+                if (err) {
+                    res
+                    .status(400)
+                    .json({ "message": "error", "detail": err})
+                } else {
+                    res.header('Content-Type', 'text/csv');
+                    res.setHeader('Content-Disposition', 'attachment; filename=\"' + 'download-' + Date.now() + '.csv\"');
+                    res.attachment(`${new Date(fileNameGenerated).toISOString()}_analysis.csv`);
+                    readable.pipe(res);
+                }
+            });
+    
+        } catch (e) {
+            res
+            .status(400)
+            .json({ "message": "error", "detail": e})
+        }
+    } else {
+        res.status(400).json({
+            "message":"Invalid key given"
+        })
     }
-
 })
 
 
 // https://localhost:3000/bot/swapper/bumble?numberOfSwipe=20&subKey=1b2a394aabe2f86529f9d84a855ea8a9d72f9f7931001e884a48690d507d1972&sharedKey=
 app.get('/bot/swapper/bumble', authentication, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.log("HERE WS", Object.keys(clients))
-
     const { numberOfSwipe, subKey, sharedKey } = req.query;
     //@ts-ignore
     let {credentials} = req;
@@ -145,7 +150,7 @@ wsServer.on('request', async (request: any) => {
         const subKeyHash = request.resourceURL.query.key ;
         const shareSubKeyHash =  request.resourceURL.query.key;
     
-        clients.sockets[`${uuid}::${subKeyHash}::${shareSubKeyHash}`] = connection;
+        clients.sockets[`${uuid}::${subKeyHash}::${shareSubKeyHash}%SYNC`] = connection;
         console.log("new client created (synchronize) :" + Object.keys(clients).length);
         // Send key at connection if you need to get back data / sync
         clients.sockets[`${uuid}::${subKeyHash}::${shareSubKeyHash}`].send(JSON.stringify(<IWSMessageNewSubBumbleAnalysisProfiles>{"source": WSMesageSource.BUMBLE_WEB, "type": WSMessageType.NEW_SUB_BUMBLE_ANALYSIS_PROFILES,"subKey": subKeyHash, "subSharedKey": shareSubKeyHash}));

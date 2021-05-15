@@ -35,8 +35,11 @@ interface ProfileCsvCleaned {
 };
 
 export default {
-    convertTo :  async (format: AllowedFormatDataset, mongoClient:any): Promise<any> => {
-        const cursorProfiles = await mongoClient.BumbleProfileCollection.find({});
+    convertTo :  async (format: AllowedFormatDataset, mongoClient:any, key:any): Promise<any> => {
+        console.log("KEY", key);
+        const cursorProfiles = await mongoClient.BumbleProfileCollection.find( { $or: [ {"subKeyUsed": key}, {"subSharedKeyUsed": key}]});
+
+        // TODO batch for big size value
 
         /*
         cursorProfiles.map( (profile:ProfileCsv) => {
@@ -46,14 +49,21 @@ export default {
 
         //await cursorProfiles.forEach( (data:any) => console.log(data))
         const profiles: Array<ProfileCsv> = await cursorProfiles.toArray();
+        console.log(profiles);
         // TODO => sanitize les données
 
-        const csvOutputWritableStreamAndFileName = await csvOutput(profiles);
-        console.log("GENERATED")
+        if ( profiles.length > 0 ) {
+            const csvOutputWritableStreamAndFileName = await csvOutput(profiles);
+            console.log("GENERATED")
+            return new Promise( (resolve, reject) => {
+                resolve(csvOutputWritableStreamAndFileName);
+            }) 
+        } else {
+            return new Promise( (resolve, reject) => {
+                reject("No profiles found for this key");
+            }) 
+        }
 
-        return new Promise( (resolve, reject) => {
-            resolve(csvOutputWritableStreamAndFileName);
-        }) 
     }
 }
 
@@ -103,11 +113,14 @@ const csvOutput  = async (profiles : Array<ProfileCsv>): Promise<any> => {
     const csvStream = csv.format({ headers: true });
     
     const fileNameGenerated = new Date().getTime();
-    const writable:any = fs.createWriteStream(`./${fileNameGenerated}.csv`)
+    const writable:any = fs.createWriteStream(`./${fileNameGenerated}.csv`, {encoding: 'utf8'})
 
     profiles.map( (profile:ProfileCsv) => {
         const profileForCsv = sanitizeData(profile)
+        //console.log("SAN");
+        //console.log(profileForCsv);
         csvStream.write(profileForCsv);
+        //csvStream.write({ header1: "row1-col1", header2: "row1-col2"})
     })
     csvStream.end()
     csvStream.pipe(writable).on('end', () =>{process.exit()});
