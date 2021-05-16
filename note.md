@@ -47,3 +47,10 @@ artist pic URL
 #main > div > div.page__layout > main > div.page__content-inner > div > div > span > div:nth-child(1) > article > div.encounters-album__stories-container > div:nth-child(5) > article > div:nth-child(2) > section.encounters-story-section.encounters-story-section--spotify > div > aside > ul > li:nth-child(1) > div.spotify-widget__artist-photo
 
 #main > div > div.page__layout > main > div.page__content-inner > div > div > span > div:nth-child(1) > article > div.encounters-album__stories-container > div:nth-child(5) > article > div:nth-child(2) > section.encounters-story-section.encounters-story-section--spotify > div > aside > ul > li:nth-child(1) > div.spotify-widget__artist-name
+
+
+
+https://runawayhorse001.github.io/LearningApacheSpark/setup.html
+https://medium.com/@chris_bour/6-differences-between-pandas-and-spark-dataframes-1380cec394d2
+https://stephanewalter.fr/post/2017-11-19-spark-sur-docker/
+https://towardsdatascience.com/spark-vs-pandas-part-4-recommendations-35fc554573d5

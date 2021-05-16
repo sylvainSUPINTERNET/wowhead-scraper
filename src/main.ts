@@ -87,6 +87,9 @@ export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCre
             "subSharedKeyUsed": ""
         }
 
+        profile.createdAt = new Date().toISOString();
+        profile.updatedAt = new Date().toISOString();
+
         try {
             profile.name = await page.$eval("span.encounters-story-profile__name", (elem: any) => elem.innerText)
         } catch (e) {
@@ -254,8 +257,6 @@ export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCre
         await timer(delay);
         let { name } = generateSwipeAction(true); // generate only NO swipe -avoid shitty modal-
         console.log(` > Generated swipe action : ${name}`);
-        profile.updatedAt = new Date().toISOString();
-        profile.createdAt = new Date().toISOString();
         collectedProfiles = [...collectedProfiles, profile];
         await page.keyboard.press(name);
         

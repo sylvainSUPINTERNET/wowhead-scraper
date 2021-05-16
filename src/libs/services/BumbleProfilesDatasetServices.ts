@@ -95,7 +95,7 @@ const sanitizeData = (profileToClean: ProfileCsv) : ProfileCsvCleaned => {
         hobbiesDetail = [...hobbiesDetail, d.alt]
       });
     p.hobbiesName = hobbiesNameList.join(" ")
-    p.hobbiesDetails = hobbiesDetail.join(" ")
+    p.hobbiesDetails = hobbiesDetail.join(",")
 
     profileToClean.musics.map( d => { 
         artistsList = [...artistsList, d.artistName]
@@ -117,10 +117,7 @@ const csvOutput  = async (profiles : Array<ProfileCsv>): Promise<any> => {
 
     profiles.map( (profile:ProfileCsv) => {
         const profileForCsv = sanitizeData(profile)
-        //console.log("SAN");
-        //console.log(profileForCsv);
         csvStream.write(profileForCsv);
-        //csvStream.write({ header1: "row1-col1", header2: "row1-col2"})
     })
     csvStream.end()
     csvStream.pipe(writable).on('end', () =>{process.exit()});

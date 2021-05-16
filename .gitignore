@@ -29,6 +29,8 @@ coverage
 
 .env
 
+note.md
+
 *.csv
 
 # nyc test coverage
