@@ -102,6 +102,16 @@ app.get('/bot/swapper/bumble', authentication, async (req: express.Request, res:
 })
 
 
+app.get('/unity/profiles', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const profilesCursor = await DbClient.BumbleProfileCollection.find({});
+    const dataProfiles = await profilesCursor.toArray();
+    res.status(200).json({
+        "profiles" : dataProfiles
+    })
+})
+
+
+
 // https://localhost:3000/bot?action=analysis&target=messages&where=linkedin&limit=2
 app.get('/bot', authentication, async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     let {where, action, target, limit} = req.query;
