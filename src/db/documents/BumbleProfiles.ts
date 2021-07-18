@@ -13,5 +13,6 @@ export interface BumbleProfile {
     createdAt: string
     updatedAt: string
     subKeyUsed: string,
-    subSharedKeyUsed: string
+    subSharedKeyUsed: string,
+    pictureUrl: string
 }

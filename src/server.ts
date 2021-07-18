@@ -11,6 +11,21 @@ let https = require('https');
 let fs = require('fs');
 const webSocketServer = require('websocket').server;
 
+const grpc = require("@grpc/grpc-js");
+const PROTO_PATH = "./proto/news.proto";
+const protoLoader = require("@grpc/proto-loader");
+
+const packageDefinition = protoLoader.loadSync(PROTO_PATH);
+const newsProto = grpc.loadPackageDefinition(packageDefinition);
+
+import {GetAllNews, Test} from "./grpc/News";
+
+let grpcServer = new grpc.Server();
+grpcServer.addService(newsProto.NewsService.service,{
+    GetAllNews,
+    Test
+});
+
 
 
 import express from 'express';
@@ -105,9 +120,7 @@ app.get('/bot/swapper/bumble', authentication, async (req: express.Request, res:
 app.get('/unity/profiles', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const profilesCursor = await DbClient.BumbleProfileCollection.find({});
     const dataProfiles = await profilesCursor.toArray();
-    res.status(200).json({
-        "profiles" : dataProfiles
-    })
+    res.status(200).json({"profiles":dataProfiles})
 })
 
 
@@ -144,6 +157,12 @@ httpsServer.listen(PORT, () => {
 const wsServer = new webSocketServer({
     httpServer: httpsServer
 });
+
+grpcServer.bindAsync('localhost:50051', grpc.ServerCredentials.createInsecure(), () => {
+    grpcServer.start();
+    console.log("[API] GRPC has started : localhost:50051");
+});
+
 console.log("[API] ws is ready")
 
 

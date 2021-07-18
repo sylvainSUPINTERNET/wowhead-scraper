@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+message News {
+    string _id = 1;
+    string name = 2;
+    string description = 3;
+}
+
+service NewsService {
+    rpc GetAllNews(Empty) returns (NewsList) {}
+    rpc Test(HelloRequest) returns (ResponseTest){}
+}
+
+
+message HelloRequest {
+    string name = 1;
+}
+
+message ResponseTest {
+    string message = 1;
+}
+
+message Empty {
+    
+}
+
+message NewsList {
+    repeated News news = 1;
+}

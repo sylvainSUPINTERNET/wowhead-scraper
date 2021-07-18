@@ -84,7 +84,8 @@ export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCre
             "createdAt": "",
             "updatedAt": "",
             "subKeyUsed": "",
-            "subSharedKeyUsed": ""
+            "subSharedKeyUsed": "",
+            "pictureUrl": ""
         }
 
         profile.createdAt = new Date().toISOString();
@@ -195,6 +196,11 @@ export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCre
             
         }
 
+        try {
+            profile.pictureUrl = await page.$eval("#main > div > div.page__layout > main > div.page__content-inner > div > div > span > div:nth-child(1) > article > div.encounters-album__stories-container > div:nth-child(1) > article > div:nth-child(1) > div > figure > picture > img", (elem: any) => elem.src);
+        } catch (e) {
+
+        }
 
         console.log(`== PROFILE ${profile.name} ==`)
         console.log(` > age : ${profile.age}`)
@@ -205,6 +211,7 @@ export const bumbleBotSwipe = async (numberOfSwipe: any, credentials: AccountCre
         console.log(` > From : ${profile.from} `)
         console.log( " > Hobbies : ", profile.hobbies)
         console.log(" > Musics : ", profile.musics)
+        console.log(" > Picture URL : ", profile.pictureUrl);
 
         console.log(` > Delay : ${delay} ms`);
 
